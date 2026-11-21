@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>من يكتب من | حجز التذاكر</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --intro-img: url('intro.jpg');
+    --booking-img: url('booking.jpg');
+    --cream:#faf5ea; --burgundy:#6e1b2b; --gold:#c9a227; --ink:#2a1a1f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Cairo',sans-serif;background:var(--cream);color:var(--ink);overflow-x:hidden;-webkit-tap-highlight-color:transparent;}
+  .screen{position:fixed;inset:0;display:flex;overflow-y:auto;opacity:0;visibility:hidden;transition:opacity .45s ease, visibility .45s;padding:28px 18px;}
+  .screen.active{opacity:1;visibility:visible;z-index:2}
+  .screen > .wrap{margin:auto;width:100%}
+  .bg{position:absolute;inset:0;z-index:-1;background-position:center;background-size:cover;background-repeat:no-repeat}
+  
+  /* شاشة 1 */
+  #intro{background:#fff}
+  #intro .bg{background-image:var(--intro-img);background-size:cover;opacity:.15;mix-blend-mode:multiply;}
+  #intro::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.9) 0%, rgba(250,245,234,1) 80%);}
+  .intro-wrap{text-align:center;max-width:900px;margin-inline:auto}
+  .eyebrow{letter-spacing:.5em;font-size:.85rem;font-weight:600;color:var(--burgundy);opacity:.75;margin-bottom:18px;padding-right:.5em;}
+  .title{font-family:'Aref Ruqaa',serif;font-weight:700;font-size:clamp(3.2rem, 15vw, 8.5rem);line-height:1.15;color:var(--burgundy);cursor:pointer;user-select:none;transition:transform .4s cubic-bezier(.2,.8,.2,1), color .3s;text-shadow:0 2px 0 rgba(255,255,255,.6),0 18px 40px rgba(110,27,43,.22);animation:float 5s ease-in-out infinite;}
+  .title:hover{transform:scale(1.04);color:#8a2236}
+  .title:active{transform:scale(.98)}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .tap{margin-top:26px;font-size:1rem;font-weight:600;color:var(--burgundy);opacity:.8;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+  .director{margin-top:20px;font-size:1.1rem;font-weight:700;color:var(--burgundy);}
+  .info{margin-top:38px;display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:center;align-items:center;font-size:.95rem;font-weight:600;color:#5c4b4f;}
+  .info .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block}
+
+  /* شاشة 2 */
+  #booking{background:#1c1114}
+  #booking .bg{background-image:var(--booking-img);opacity:.65}
+  #booking::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg, rgba(10,5,8,.6), rgba(10,5,8,.85));}
+  .card{width:min(480px,100%);margin-inline:auto;background:rgba(255,253,247,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:26px;padding:34px 26px;box-shadow:0 30px 70px rgba(0,0,0,.55);border:1px solid rgba(201,162,39,.4);animation:pop .45s cubic-bezier(.2,.9,.3,1.2);}
+  @keyframes pop{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+  .card h2{font-family:'Aref Ruqaa',serif;color:var(--burgundy);font-size:1.9rem;text-align:center;margin-bottom:6px;}
+  .card .sub{text-align:center;font-size:.9rem;color:#7a6a6d;margin-bottom:26px;font-weight:700;}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-weight:700;font-size:.92rem;margin-bottom:8px;color:#3d2b30}
+  .field input{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid #e6dcc8;background:#fffdf8;font-family:inherit;font-size:1rem;color:var(--ink);outline:none;transition:.2s;}
+  .field input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,162,39,.15);background:#fff;}
+  .err{display:none;background:#fdecef;color:#a11834;padding:10px 14px;border-radius:12px;font-size:.85rem;font-weight:600;margin-bottom:16px;border:1px solid #f6c9d2;}
+  .err.show{display:block;animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .shows-label{font-weight:700;font-size:.92rem;margin:22px 0 10px;color:#3d2b30}
+  .show-opt{width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;margin-bottom:12px;border-radius:16px;border:1.5px solid #e6dcc8;background:#fffdf8;font-family:inherit;font-size:1rem;font-weight:700;color:var(--ink);cursor:pointer;transition:.22s;position:relative;}
+  .show-opt .time{color:var(--burgundy);font-size:1.15rem}
+  .show-opt .tickets-left{font-size:.75rem;color:#888;display:block;font-weight:normal;margin-top:4px;}
+  .show-opt:hover{border-color:var(--burgundy);background:#fff;transform:translateY(-3px);box-shadow:0 12px 26px rgba(110,27,43,.14);}
+  .show-opt:active{transform:translateY(-1px)}
+  .show-opt.sold-out{opacity:.5;cursor:not-allowed;background:#eee;border-color:#ccc;pointer-events:none;}
+  .venue{margin-top:26px;text-align:center;font-size:.82rem;line-height:1.9;color:#7a6a6d;border-top:1px dashed #e6dcc8;padding-top:16px;font-weight:600;}
+
+  /* شاشة 3 */
+  #payment{background:var(--cream)}
+  #payment::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 20%, rgba(201,162,39,.16), transparent 60%);}
+  .price-tag{text-align:center;font-size:1.2rem;font-weight:900;color:var(--burgundy);margin-bottom:10px;background:#f5eedd;padding:8px;border-radius:10px;display:inline-block;width:100%;}
+  .pay-box{background:#fffdf8;border:2px dashed var(--gold);border-radius:18px;padding:20px;text-align:center;margin:22px 0;}
+  .pay-box .lbl{font-size:.82rem;font-weight:700;color:#7a6a6d;letter-spacing:.1em}
+  .pay-box .num{display:block;font-size:1.7rem;font-weight:900;letter-spacing:.05em;color:var(--burgundy);margin:8px 0 14px;direction:ltr;}
+  .copy{border:none;background:var(--burgundy);color:#fff;font-family:inherit;font-weight:700;font-size:.85rem;padding:10px 22px;border-radius:30px;cursor:pointer;transition:.2s;}
+  .copy:hover{background:#8a2236;transform:translateY(-2px)}
+  .wa{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;border-radius:16px;background:#25D366;color:#fff;font-weight:800;font-size:1rem;text-decoration:none;box-shadow:0 14px 30px rgba(37,211,102,.35);transition:.22s;margin-top:6px;}
+  .wa:hover{background:#1eb85a;transform:translateY(-3px);box-shadow:0 18px 36px rgba(37,211,102,.45)}
+  .wa svg{width:22px;height:22px;fill:#fff}
+  .note{text-align:center;font-size:.85rem;font-weight:600;color:#7a6a6d;margin-top:14px;line-height:1.8;}
+  .summary{margin-top:24px;background:#f5eedd;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;font-size:.9rem;}
+  .summary div{display:flex;justify-content:space-between;gap:10px}
+  .summary span{color:#7a6a6d;font-weight:600}
+  .summary strong{color:var(--ink);font-weight:800;text-align:left}
+  .back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-family:inherit;font-size:.88rem;font-weight:700;color:#7a6a6d;cursor:pointer;margin-bottom:16px;padding:6px 4px;transition:.2s;}
+  .back:hover{color:var(--burgundy)}
+  
+  /* شاشة 4: التذكرة */
+  #ticket{background:#1c1114}
+  #ticket::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 50%, rgba(110,27,43,.3), rgba(10,5,8,1));}
+  .qr-box{text-align:center;margin:20px 0;padding:20px;background:#fff;border-radius:16px;display:inline-block;width:100%;}
+  .qr-box img{width:180px;height:180px;display:block;margin:0 auto;}
+  .qr-box .code{font-weight:900;color:var(--burgundy);font-size:1.2rem;margin-top:10px;direction:ltr;}
+
+  @media (max-width:400px){.card{padding:28px 20px;border-radius:22px}.card h2{font-size:1.6rem}}
+</style>
+</head>
+<body>
+
+<!-- شاشة 1 -->
+<section class="screen active" id="intro">
+  <div class="bg"></div>
+  <div class="wrap intro-wrap">
+    <p class="eyebrow">عرض مسرحي</p>
+    <h1 class="title" id="showTitle">من يكتب من</h1>
+    <p class="director">دراماتورج وإخراج: شادي نادر</p>
+    <p class="tap">اضغط على اسم العرض للحجز ↓</p>
+    <div class="info">
+      <span>الجمعة ١١ ديسمبر</span><span class="dot"></span><span>مسرح ستوديو ناصبيان — جيزويت القاهرة</span>
+    </div>
+  </div>
+</section>
+
+<!-- شاشة 2 -->
+<section class="screen" id="booking">
+  <div class="bg"></div>
+  <div class="wrap">
+    <div class="card">
+      <button class="back" onclick="go('intro')">→ رجوع</button>
+      <h2>حجز التذكرة</h2>
+      <p class="sub">سعر التذكرة: ١٠٠ جنيه</p>
+      <div class="err" id="errBox"></div>
+      <div class="field">
+        <label for="nameInput">الاسم</label>
+        <input id="nameInput" type="text" placeholder="اكتب اسمك بالكامل" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="phoneInput">رقم الموبايل</label>
+        <input id="phoneInput" type="tel" inputmode="numeric" placeholder="01xxxxxxxxx" autocomplete="tel" maxlength="11" />
+      </div>
+      <p class="shows-label">اختر الحفلة</p>
+      <button class="show-opt" data-show="1" id="btnShow1">
+        <div><span>الحفلة الأولى</span><span class="tickets-left" id="left1">جاري التحميل...</span></div>
+        <span class="time">٧:٣٠ م</span>
+      </button>
+      <button class="show-opt" data-show="2" id="btnShow2">
+        <div><span>الحفلة الثانية</span><span class="tickets-left" id="left2">جاري التحميل...</span></div>
+        <span class="time">٨:٣٠ م</span>
+      </button>
+      <div class="venue">📍 مسرح ستوديو ناصبيان — جيزويت القاهرة<br>🗓️ الجمعة ١١ ديسمبر</div>
+    </div>
+  </div>
+</section>
+
+<!-- شاشة 3 -->
+<section class="screen" id="payment">
+  <div class="wrap">
+    <div class="card">
+      <button class="back" onclick="go('booking')">→ رجوع</button>
+      <h2>الدفع</h2>
+      <div class="price-tag">المطلوب تحويله: ١٠٠ جنيه</div>
+      <p class="sub">حوّل قيمة التذكرة على إنستاباي</p>
+      <div class="pay-box">
+        <span class="lbl">INSTAPAY</span>
+        <span class="num">01276896654</span>
+        <button class="copy" onclick="copyNumber(this)">نسخ الرقم</button>
+      </div>
+      <a id="waBtn" class="wa" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.45 1.32 4.95L2 22l5.24-1.37a9.9 9.9 0 004.8 1.23h.01c5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2zm5.8 14.1c-.24.68-1.4 1.3-1.93 1.35-.5.05-1.13.07-1.83-.12-.42-.13-.95-.3-1.64-.6-2.9-1.25-4.8-4.17-4.94-4.37-.15-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.4.26-.3.57-.37.77-.37.19 0 .38 0 .55.01.18.01.42-.07.65.5.24.6.8 2.05.87 2.2.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.61.17.3.76 1.26 1.63 2.04 1.12 1 2.06 1.31 2.36 1.46.3.15.47.13.65-.08.17-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.27.1 1.72.81 2.02.96.3.15.5.22.57.35.07.12.07.72-.17 1.4z"/></svg>
+        تأكيد الدفع وإرسال سكرين التحويل
+      </a>
+      <p class="note">برجاء إرسال سكرين التحويل على واتساب لاستلام التكت ✅</p>
+      <div class="summary">
+        <div><span>الاسم</span><strong id="sumName"></strong></div>
+        <div><span>الموبايل</span><strong id="sumPhone"></strong></div>
+        <div><span>الحفلة</span><strong id="sumShow"></strong></div>
+        <div><span>السعر</span><strong>١٠٠ جنيه</strong></div>
+      </div>
+      <!-- زرار استلام التذكرة -->
+      <button id="showTicketBtn" style="display:none; width:100%; margin-top:15px; padding:14px; border:none; border-radius:14px; background:var(--burgundy); color:#fff; font-weight:800; font-family:inherit; font-size:1rem; cursor:pointer;" onclick="go('ticket')">عرض التذكرة و QR Code</button>
+    </div>
+  </div>
+</section>
+
+<!-- شاشة 4: التذكرة والـ QR -->
+<section class="screen" id="ticket">
+  <div class="wrap">
+    <div class="card" style="text-align:center;">
+      <h2 style="margin-bottom:20px;">تذكرتك جاهزة!</h2>
+      <p style="color:var(--burgundy); font-weight:700; margin-bottom:20px;">احتفظ بهذه الشاشة وأظهرها عند الدخول</p>
+      <div class="qr-box">
+        <img id="qrImage" src="" alt="QR Code">
+        <div class="code" id="qrCodeText"></div>
+      </div>
+      <div class="summary" style="text-align:right;">
+        <div><span>الاسم</span><strong id="tName"></strong></div>
+        <div><span>الحفلة</span><strong id="tShow"></strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ✅ اللينك بتاعك اللي أنت لسه باعته
+  const API_URL = "https://script.google.com/macros/s/AKfycbx75Q-3hNPmjrWrFxvK0VNtUB3Z2m27EDqUeKOcQADoyDYup5zczrZtOOpw1M-gxun_/exec"; 
+  
+  const WHATSAPP_NUMBER = '201002137765';
+  const SHOWS = {
+    '1': { label: 'الحفلة الأولى', time: '٧:٣٠ مساءً' },
+    '2': { label: 'الحفلة الثانية', time: '٨:٣٠ مساءً' }
+  };
+
+  const state = { name:'', phone:'', show:null, bookingCode: '' };
+
+  // جلب العداد من جوجل شيت
+  async function fetchCounts() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      
+      document.getElementById('left1').textContent = `(متبقي ${data.show1} تذكرة)`;
+      document.getElementById('left2').textContent = `(متبقي ${data.show2} تذكرة)`;
+
+      if(data.show1 <= 0) {
+        document.getElementById('btnShow1').classList.add('sold-out');
+        document.getElementById('left1').textContent = 'نفذت التذاكر';
+      }
+      if(data.show2 <= 0) {
+        document.getElementById('btnShow2').classList.add('sold-out');
+        document.getElementById('left2').textContent = 'نفذت التذاكر';
+      }
+    } catch(e) {
+      console.log("خطأ في جلب العداد", e);
+      document.getElementById('left1').textContent = "(160 تذكرة)";
+      document.getElementById('left2').textContent = "(160 تذكرة)";
+    }
+  }
+
+  fetchCounts();
+
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  document.getElementById('showTitle').addEventListener('click', () => go('booking'));
+
+  function showError(msg){
+    const box = document.getElementById('errBox');
+    box.textContent = msg;
+    box.classList.add('show');
+  }
+
+  document.querySelectorAll('.show-opt').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name  = document.getElementById('nameInput').value.trim();
+      const phone = document.getElementById('phoneInput').value.replace(/[\s-]/g,'');
+      const showId = btn.dataset.show;
+
+      document.getElementById('errBox').classList.remove('show');
+
+      if(name.length < 2){ showError('من فضلك اكتب اسمك الأول'); return; }
+      if(!/^01\d{9}$/.test(phone)){ showError('من فضلك اكتب رقم موبايل صحيح (١١ رقم يبدأ بـ 01)'); return; }
+
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span>جاري الحجز...</span>';
+
+      try {
+        // إرسال البيانات لجوجل شيت
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ name: name, phone: phone, show: showId })
+        });
+        
+        const result = await response.json();
+        
+        state.name = name;
+        state.phone = phone;
+        state.show = SHOWS[showId];
+        state.bookingCode = result.code; 
+
+        renderPayment();
+        go('payment');
+      } catch(err) {
+        showError('حدث خطأ في الاتصال، برجاء المحاولة مرة أخرى.');
+        btn.innerHTML = originalText;
+      }
+    });
+  });
+
+  function renderPayment(){
+    document.getElementById('sumName').textContent  = state.name;
+    document.getElementById('sumPhone').textContent = state.phone;
+    document.getElementById('sumShow').textContent  = `${state.show.label} — ${state.show.time}`;
+
+    const message =
+      `مرحبًا 👋\n` +
+      `حجز تذكرة لعرض: من يكتب من\n` +
+      `كود الحجز: ${state.bookingCode}\n` +
+      `الاسم: ${state.name}\n` +
+      `الموبايل: ${state.phone}\n` +
+      `${state.show.label} — الساعة ${state.show.time}\n` +
+      `سعر التذكرة: ١٠٠ جنيه\n` +
+      `وهذا سكرين التحويل 👇`;
+
+    document.getElementById('waBtn').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    
+    const ticketBtn = document.getElementById('showTicketBtn');
+    ticketBtn.style.display = 'block';
+    ticketBtn.onclick = () => {
+      const qrData = `http://yourwebsite.com/verify?code=${state.bookingCode}`;
+      document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrData)}`;
+      document.getElementById('qrCodeText').textContent = state.bookingCode;
+      document.getElementById('tName').textContent = state.name;
+      document.getElementById('tShow').textContent = state.show.label;
+      go('ticket');
+    };
+  }
+
+  function copyNumber(btn){
+    const num = '01276896654';
+    const done = () => {
+      const original = btn.textContent;
+      btn.textContent = '✅ تم النسخ';
+      setTimeout(() => btn.textContent = original, 1800);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(num).then(done).catch(fallback);
+    } else { fallback(); }
+    function fallback(){
+      const ta = document.createElement('textarea');
+      ta.value = num; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){ alert('الرقم: ' + num); }
+      document.body.removeChild(ta);
+    }
+  }
+</script>
+</body>
+</html>
