@@ -47,8 +47,8 @@
   .card .sub{text-align:center;font-size:.9rem;color:#7a6a6d;margin-bottom:26px;font-weight:700;}
   .field{margin-bottom:18px}
   .field label{display:block;font-weight:700;font-size:.92rem;margin-bottom:8px;color:#3d2b30}
-  .field input{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid #e6dcc8;background:#fffdf8;font-family:inherit;font-size:1rem;color:var(--ink);outline:none;transition:.2s;}
-  .field input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,162,39,.15);background:#fff;}
+  .field input, .field select{width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid #e6dcc8;background:#fffdf8;font-family:inherit;font-size:1rem;color:var(--ink);outline:none;transition:.2s;}
+  .field input:focus, .field select:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,162,39,.15);background:#fff;}
   .err{display:none;background:#fdecef;color:#a11834;padding:10px 14px;border-radius:12px;font-size:.85rem;font-weight:600;margin-bottom:16px;border:1px solid #f6c9d2;}
   .err.show{display:block;animation:shake .4s}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -124,6 +124,19 @@
         <label for="phoneInput">رقم الموبايل</label>
         <input id="phoneInput" type="tel" inputmode="numeric" placeholder="01xxxxxxxxx" autocomplete="tel" maxlength="11" />
       </div>
+      
+      <!-- قائمة عدد التذاكر -->
+      <div class="field">
+        <label for="qtyInput">عدد التذاكر</label>
+        <select id="qtyInput">
+          <option value="1">تذكرة واحدة (١٠٠ جنيه)</option>
+          <option value="2">تذكرتين (٢٠٠ جنيه)</option>
+          <option value="3">٣ تذاكر (٣٠٠ جنيه)</option>
+          <option value="4">٤ تذاكر (٤٠٠ جنيه)</option>
+          <option value="5">٥ تذاكر (٥٠٠ جنيه)</option>
+        </select>
+      </div>
+
       <p class="shows-label">اختر الحفلة</p>
       <button class="show-opt" data-show="1" id="btnShow1">
         <div><span>الحفلة الأولى</span><span class="tickets-left" id="left1">جاري التحميل...</span></div>
@@ -144,8 +157,8 @@
     <div class="card">
       <button class="back" onclick="go('booking')">→ رجوع</button>
       <h2>الدفع</h2>
-      <div class="price-tag">المطلوب تحويله: ١٠٠ جنيه</div>
-      <p class="sub">حوّل قيمة التذكرة على إنستاباي</p>
+      <div class="price-tag" id="totalPriceText">المطلوب تحويله: ١٠٠ جنيه</div>
+      <p class="sub">حوّل قيمة التذاكر على إنستاباي</p>
       <div class="pay-box">
         <span class="lbl">INSTAPAY</span>
         <span class="num">01276896654</span>
@@ -160,9 +173,9 @@
         <div><span>الاسم</span><strong id="sumName"></strong></div>
         <div><span>الموبايل</span><strong id="sumPhone"></strong></div>
         <div><span>الحفلة</span><strong id="sumShow"></strong></div>
-        <div><span>السعر</span><strong>١٠٠ جنيه</strong></div>
+        <div><span>عدد التذاكر</span><strong id="sumQty"></strong></div>
+        <div><span>الإجمالي</span><strong id="sumPrice"></strong></div>
       </div>
-      <!-- زرار استلام التذكرة -->
       <button id="showTicketBtn" style="display:none; width:100%; margin-top:15px; padding:14px; border:none; border-radius:14px; background:var(--burgundy); color:#fff; font-weight:800; font-family:inherit; font-size:1rem; cursor:pointer;" onclick="go('ticket')">عرض التذكرة و QR Code</button>
     </div>
   </div>
@@ -181,13 +194,13 @@
       <div class="summary" style="text-align:right;">
         <div><span>الاسم</span><strong id="tName"></strong></div>
         <div><span>الحفلة</span><strong id="tShow"></strong></div>
+        <div><span>العدد</span><strong id="tQty"></strong></div>
       </div>
     </div>
   </div>
 </section>
 
 <script>
-  // ✅ اللينك بتاعك اللي أنت لسه باعته
   const API_URL = "https://script.google.com/macros/s/AKfycbx75Q-3hNPmjrWrFxvK0VNtUB3Z2m27EDqUeKOcQADoyDYup5zczrZtOOpw1M-gxun_/exec"; 
   
   const WHATSAPP_NUMBER = '201002137765';
@@ -196,9 +209,8 @@
     '2': { label: 'الحفلة الثانية', time: '٨:٣٠ مساءً' }
   };
 
-  const state = { name:'', phone:'', show:null, bookingCode: '' };
+  const state = { name:'', phone:'', show:null, bookingCode: '', qty: 1 };
 
-  // جلب العداد من جوجل شيت
   async function fetchCounts() {
     try {
       const res = await fetch(API_URL);
@@ -243,6 +255,7 @@
       const name  = document.getElementById('nameInput').value.trim();
       const phone = document.getElementById('phoneInput').value.replace(/[\s-]/g,'');
       const showId = btn.dataset.show;
+      const qty = parseInt(document.getElementById('qtyInput').value);
 
       document.getElementById('errBox').classList.remove('show');
 
@@ -253,10 +266,9 @@
       btn.innerHTML = '<span>جاري الحجز...</span>';
 
       try {
-        // إرسال البيانات لجوجل شيت
         const response = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ name: name, phone: phone, show: showId })
+          body: JSON.stringify({ name: name, phone: phone, show: showId, qty: qty })
         });
         
         const result = await response.json();
@@ -265,6 +277,7 @@
         state.phone = phone;
         state.show = SHOWS[showId];
         state.bookingCode = result.code; 
+        state.qty = qty;
 
         renderPayment();
         go('payment');
@@ -279,15 +292,21 @@
     document.getElementById('sumName').textContent  = state.name;
     document.getElementById('sumPhone').textContent = state.phone;
     document.getElementById('sumShow').textContent  = `${state.show.label} — ${state.show.time}`;
+    document.getElementById('sumQty').textContent   = `${state.qty} تذكرة`;
+    
+    const totalPrice = state.qty * 100;
+    document.getElementById('sumPrice').textContent = `${totalPrice} جنيه`;
+    document.getElementById('totalPriceText').textContent = `المطلوب تحويله: ${totalPrice} جنيه`;
 
     const message =
       `مرحبًا 👋\n` +
-      `حجز تذكرة لعرض: من يكتب من\n` +
+      `حجز تذاكر لعرض: من يكتب من\n` +
       `كود الحجز: ${state.bookingCode}\n` +
       `الاسم: ${state.name}\n` +
       `الموبايل: ${state.phone}\n` +
       `${state.show.label} — الساعة ${state.show.time}\n` +
-      `سعر التذكرة: ١٠٠ جنيه\n` +
+      `عدد التذاكر: ${state.qty}\n` +
+      `إجمالي التحويل: ${totalPrice} جنيه\n` +
       `وهذا سكرين التحويل 👇`;
 
     document.getElementById('waBtn').href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -295,11 +314,14 @@
     const ticketBtn = document.getElementById('showTicketBtn');
     ticketBtn.style.display = 'block';
     ticketBtn.onclick = () => {
-      const qrData = `http://yourwebsite.com/verify?code=${state.bookingCode}`;
+      // توجيه الـ QR لصفحة الفحص
+      const qrData = `https://garges42.github.io/men-yaktub-men/verify.html?code=${state.bookingCode}`;
+      
       document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrData)}`;
       document.getElementById('qrCodeText').textContent = state.bookingCode;
       document.getElementById('tName').textContent = state.name;
       document.getElementById('tShow').textContent = state.show.label;
+      document.getElementById('tQty').textContent = `${state.qty} تذكرة`;
       go('ticket');
     };
   }
