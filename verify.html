@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>التحقق من التذكرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; transition: background-color 0.3s; background-color: #f0f0f0;}
+  .box { background: white; padding: 40px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 400px; width: 90%; }
+  h1 { margin: 0 0 10px 0; font-size: 2rem; }
+  p { font-size: 1.2rem; color: #555; margin-bottom: 20px; }
+  .status { font-size: 4rem; margin-bottom: 10px; }
+  .name { font-weight: 900; font-size: 1.5rem; color: #333; margin-bottom: 10px;}
+  .loading { font-size: 1.2rem; color: #666; }
+  .confirmed { background-color: #d4edda !important; color: #155724; }
+  .pending { background-color: #f8d7da !important; color: #721c24; }
+  .error { background-color: #fff3cd !important; color: #856404; }
+</style>
+</head>
+<body>
+  <div class="box" id="box">
+    <div class="loading" id="loading">جاري التحقق من الكود...</div>
+    <div id="result" style="display:none;">
+      <div class="status" id="statusIcon"></div>
+      <h1 id="statusText"></h1>
+      <div class="name" id="userName"></div>
+      <p id="userQty"></p>
+    </div>
+  </div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbx75Q-3hNPmjrWrFxvK0VNtUB3Z2m27EDqUeKOcQADoyDYup5zczrZtOOpw1M-gxun_/exec";
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const bookingCode = urlParams.get('code');
+
+  if (!bookingCode) {
+    showError("لا يوجد كود في الرابط!");
+  } else {
+    fetch(API_URL + "?code=" + bookingCode)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('userName').innerText = "الاسم: " + data.name;
+
+        if (data.status === "Confirmed") {
+          document.body.classList.add('confirmed');
+          document.getElementById('statusIcon').innerText = "✅";
+          document.getElementById('statusText').innerText = "تم الدفع - تفضل بالدخول";
+          document.getElementById('userQty').innerText = "العدد: " + data.qty + " تذكرة";
+        } else if (data.status === "Pending") {
+          document.body.classList.add('pending');
+          document.getElementById('statusIcon').innerText = "❌";
+          document.getElementById('statusText').innerText = "لم يتم تأكيد الدفع";
+          document.getElementById('userQty').innerText = "الحالة: قيد الانتظار (Pending)";
+        } else {
+          showError("هذا الكود غير موجود!");
+        }
+      })
+      .catch(err => showError("حدث خطأ في الاتصال بالسيرفر"));
+  }
+
+  function showError(msg) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
+    document.body.classList.add('error');
+    document.getElementById('statusIcon').innerText = "⚠️";
+    document.getElementById('statusText').innerText = msg;
+  }
+</script>
+</body>
+</html>
