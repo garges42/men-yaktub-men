@@ -37,6 +37,18 @@
   .info{margin-top:38px;display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:center;align-items:center;font-size:.95rem;font-weight:600;color:#5c4b4f;}
   .info .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block}
 
+  /* الكريدت بتاعك */
+  .credit {
+    margin-top: 50px;
+    font-size: 0.85rem;
+    color: #888;
+    background: rgba(255,255,255,0.8);
+    padding: 10px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  .credit a { color: var(--burgundy); font-weight: 700; text-decoration: none; }
+
   /* شاشة 2 */
   #booking{background:#1c1114}
   #booking .bg{background-image:var(--booking-img);opacity:.65}
@@ -104,6 +116,12 @@
     <div class="info">
       <span>الجمعة ١١ ديسمبر</span><span class="dot"></span><span>مسرح ستوديو ناصبيان — جيزويت القاهرة</span>
     </div>
+
+    <!-- الكريدت بتاعك هنا -->
+    <div class="credit">
+      صُنع بواسطة <a href="https://wa.me/201206336870" target="_blank">م. جرجس</a> | للتواصل: <a href="https://wa.me/201206336870" target="_blank">01206336870</a>
+    </div>
+
   </div>
 </section>
 
@@ -217,13 +235,12 @@
 
   const state = { name:'', phone:'', show:null, bookingCode: '', qty: 1 };
 
-  // هنا التعديل بتاع الماركتنج (إخفاء الأرقام وإظهار "عدد محدود")
+  // إخفاء الأرقام وعرض كلمة "عدد محدود" لتحفيز البيع
   async function fetchCounts() {
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
       
-      // إخفاء الأرقام وعرض كلمة "عدد محدود" لتحفيز البيع
       if(data.show1 <= 0) {
         document.getElementById('btnShow1').classList.add('sold-out');
         document.getElementById('left1').textContent = 'نفذت التذاكر';
@@ -240,7 +257,6 @@
 
     } catch(e) {
       console.log("خطأ في جلب العداد", e);
-      // في حالة الخطأ منعرضش الأرقام برضه
       document.getElementById('left1').textContent = '(عدد محدود)';
       document.getElementById('left2').textContent = '(عدد محدود)';
     }
