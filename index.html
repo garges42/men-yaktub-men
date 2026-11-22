@@ -25,7 +25,7 @@
   #intro{background:#fff}
   #intro .bg{background-image:var(--intro-img);background-size:cover;opacity:.15;mix-blend-mode:multiply;}
   #intro::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.9) 0%, rgba(250,245,234,1) 80%);}
-  .intro-wrap{text-align:center;max-width:900px;margin-inline:auto}
+  .intro-wrap{text-align:center;max-width:900px;margin-inline:auto; display: flex; flex-direction: column; min-height: 100%; justify-content: center; position: relative;}
   .eyebrow{letter-spacing:.5em;font-size:.85rem;font-weight:600;color:var(--burgundy);opacity:.75;margin-bottom:18px;padding-right:.5em;}
   .title{font-family:'Aref Ruqaa',serif;font-weight:700;font-size:clamp(3.2rem, 15vw, 8.5rem);line-height:1.15;color:var(--burgundy);cursor:pointer;user-select:none;transition:transform .4s cubic-bezier(.2,.8,.2,1), color .3s;text-shadow:0 2px 0 rgba(255,255,255,.6),0 18px 40px rgba(110,27,43,.22);animation:float 5s ease-in-out infinite;}
   .title:hover{transform:scale(1.04);color:#8a2236}
@@ -37,17 +37,19 @@
   .info{margin-top:38px;display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:center;align-items:center;font-size:.95rem;font-weight:600;color:#5c4b4f;}
   .info .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block}
 
-  /* الكريدت بتاعك */
+  /* الكريدت بتاعك - تم تعديله ليكون خفيف وتحت خالص */
   .credit {
-    margin-top: 50px;
-    font-size: 0.85rem;
-    color: #888;
-    background: rgba(255,255,255,0.8);
-    padding: 10px;
-    border-radius: 20px;
-    display: inline-block;
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    font-size: 0.75rem;
+    color: #b0b0b0;
+    text-align: center;
+    direction: ltr;
   }
-  .credit a { color: var(--burgundy); font-weight: 700; text-decoration: none; }
+  .credit a { color: #999; font-weight: 600; text-decoration: none; }
+  .credit a:hover { color: var(--burgundy); }
 
   /* شاشة 2 */
   #booking{background:#1c1114}
@@ -109,17 +111,21 @@
 <section class="screen active" id="intro">
   <div class="bg"></div>
   <div class="wrap intro-wrap">
-    <p class="eyebrow">عرض مسرحي</p>
-    <h1 class="title" id="showTitle">من يكتب من</h1>
-    <p class="director">دراماتورج وإخراج: شادي نادر</p>
-    <p class="tap">اضغط على اسم العرض للحجز ↓</p>
-    <div class="info">
-      <span>الجمعة ١١ ديسمبر</span><span class="dot"></span><span>مسرح ستوديو ناصبيان — جيزويت القاهرة</span>
+    
+    <!-- المحتوى الأساسي في النص -->
+    <div>
+      <p class="eyebrow">عرض مسرحي</p>
+      <h1 class="title" id="showTitle">من يكتب من</h1>
+      <p class="director">دراماتورج وإخراج: شادي نادر</p>
+      <p class="tap">اضغط على اسم العرض للحجز ↓</p>
+      <div class="info">
+        <span>الجمعة ١١ ديسمبر</span><span class="dot"></span><span>مسرح ستوديو ناصبيان — جيزويت القاهرة</span>
+      </div>
     </div>
 
-    <!-- الكريدت بتاعك هنا -->
+    <!-- الكريدت بتاعك تحت خالص وبالإنجليزي -->
     <div class="credit">
-      صُنع بواسطة <a href="https://wa.me/201206336870" target="_blank">م. جرجس</a> | للتواصل: <a href="https://wa.me/201206336870" target="_blank">01206336870</a>
+      Made by <a href="https://wa.me/201206336870" target="_blank">Eng. Gerges</a> | Contact: <a href="https://wa.me/201206336870" target="_blank">01206336870</a>
     </div>
 
   </div>
@@ -224,7 +230,6 @@
 </section>
 
 <script>
-  // الرقم الجديد للواتساب
   const WHATSAPP_NUMBER = '201092969387'; 
   const API_URL = "https://script.google.com/macros/s/AKfycbx75Q-3hNPmjrWrFxvK0VNtUB3Z2m27EDqUeKOcQADoyDYup5zczrZtOOpw1M-gxun_/exec"; 
 
@@ -235,7 +240,6 @@
 
   const state = { name:'', phone:'', show:null, bookingCode: '', qty: 1 };
 
-  // إخفاء الأرقام وعرض كلمة "عدد محدود" لتحفيز البيع
   async function fetchCounts() {
     try {
       const res = await fetch(API_URL);
